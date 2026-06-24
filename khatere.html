@@ -27,27 +27,52 @@ header{
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .hdr-title{font-size:16px;font-weight:700;}
 .hdr-sub{font-size:10px;opacity:.7;margin-top:1px;}
-.hdr-btns{display:flex;gap:5px;}
+.hdr-btns{display:flex;gap:5px;align-items:center;}
 .hbtn{background:rgba(255,255,255,.18);border:none;color:#fff;padding:6px 10px;border-radius:7px;font-family:'Vazirmatn',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
 .hbtn.save{background:var(--ac);}
 
-/* MOOD + TOOLS */
-.mood-bar{display:flex;align-items:center;gap:6px;padding-bottom:4px;}
-.mood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;flex:1;}
-.mchip{
-  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
-  border-radius:6px;padding:4px 2px;
-  font-family:'Vazirmatn',sans-serif;font-size:11px;color:#fff;
-  cursor:pointer;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+/* MOOD DRAWER */
+.mood-bar{display:flex;align-items:center;gap:8px;padding-bottom:4px;}
+.mood-selected{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.35);
+  border-radius:8px;padding:6px 10px;cursor:pointer;flex-shrink:0;
+  font-family:'Vazirmatn',sans-serif;font-size:13px;color:#fff;font-weight:600;
+  min-width:90px;
 }
-.mchip.on{background:rgba(255,255,255,.32);border-color:#fff;font-weight:700;}
-.tool-btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
-.tbtn{
-  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
-  border-radius:7px;width:38px;height:26px;font-size:15px;
+.mood-selected .ms-emoji{font-size:20px;}
+.mood-selected .ms-lbl{font-size:12px;}
+.mood-selected .ms-arr{font-size:10px;opacity:.7;margin-right:auto;}
+
+.mood-drawer{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:var(--white);border-radius:18px 18px 0 0;
+  box-shadow:0 -4px 20px rgba(0,0,0,.18);
+  padding:16px 14px 30px;
+}
+.mood-drawer.open{display:block;}
+.md-title{font-size:14px;font-weight:700;color:var(--pr);margin-bottom:12px;text-align:center;}
+.md-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.mdchip{
+  background:var(--bg);border:2px solid var(--bd);
+  border-radius:12px;padding:10px 4px;
+  font-family:'Vazirmatn',sans-serif;font-size:12px;color:var(--tx);
+  cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.mdchip .mc-em{font-size:24px;}
+.mdchip.on{background:#eaf4fb;border-color:var(--prl);color:var(--pr);font-weight:700;}
+.drawer-overlay{display:none;position:fixed;inset:0;z-index:799;background:rgba(0,0,0,.3);}
+.drawer-overlay.open{display:block;}
+
+/* QUICK TOOLS right of mood bar */
+.quick-tools{display:flex;gap:6px;margin-right:auto;}
+.qtbtn{
+  background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.35);
+  border-radius:10px;width:46px;height:46px;font-size:22px;
   cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;
+  flex-shrink:0;
 }
-.tbtn:active{background:rgba(255,255,255,.4);}
+.qtbtn:active{background:rgba(255,255,255,.4);}
 
 /* DATE BAR */
 .datebar{
@@ -57,8 +82,7 @@ header{
 .darrow{
   width:46px;height:46px;
   border:2px solid var(--prl);border-radius:11px;
-  background:var(--bg);
-  font-size:24px;cursor:pointer;color:var(--pr);
+  background:var(--bg);font-size:24px;cursor:pointer;color:var(--pr);
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;font-weight:700;user-select:none;
 }
@@ -66,6 +90,12 @@ header{
 .dmid{flex:1;text-align:center;}
 .ddate{font-size:16px;font-weight:700;color:var(--pr);}
 .ddow{font-size:11px;color:var(--mu);margin-top:1px;}
+.rem-badges{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;}
+.rbadge{
+  background:#fff3e0;border:1px solid #e67e22;border-radius:20px;
+  padding:2px 9px;font-size:10px;font-weight:700;color:#e67e22;
+  display:flex;align-items:center;gap:3px;cursor:pointer;
+}
 
 /* PAGES */
 .page{display:none;flex:1;overflow-y:auto;flex-direction:column;}
@@ -83,6 +113,7 @@ header{
   cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
 }
 .mode-btn.on{background:#eaf4fb;border-color:var(--prl);color:var(--pr);}
+#mode-check{font-size:14px;}
 
 /* WRITE CARD */
 .write-card{
@@ -90,25 +121,16 @@ header{
   display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;
 }
 #txt{
-  flex:1;width:100%;border:none;outline:none;
-  padding:14px;
+  flex:1;width:100%;border:none;outline:none;padding:14px;
   font-family:'Vazirmatn',sans-serif;font-size:15px;line-height:40px;
-  color:var(--tx);direction:rtl;resize:none;
-  min-height:0;
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 39px,
-    #d5e8f3 39px,
-    #d5e8f3 40px
-  );
+  color:var(--tx);direction:rtl;resize:none;min-height:0;
+  background-image:repeating-linear-gradient(to bottom,transparent,transparent 39px,#d5e8f3 39px,#d5e8f3 40px);
   background-attachment:local;
 }
 #txt::placeholder{color:#b0bec5;}
 
 /* BOTTOM TOOLS */
 .bottom-tools{flex-shrink:0;display:flex;flex-direction:column;gap:7px;}
-
 .backup-row{display:flex;gap:7px;}
 .bk-btn{
   flex:1;padding:11px 8px;border-radius:10px;border:1.5px solid var(--bd);
@@ -117,6 +139,18 @@ header{
   cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;
 }
 .bk-btn:active{background:var(--bd);}
+
+/* FLOATING TIME BUTTON */
+.fab-time{
+  position:fixed;left:16px;bottom:70px;z-index:400;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--pr);color:#fff;border:none;font-size:24px;
+  box-shadow:0 4px 14px rgba(26,82,118,.45);
+  cursor:grab;display:none;align-items:center;justify-content:center;
+  touch-action:none;user-select:none;
+}
+.fab-time.dragging{cursor:grabbing;transform:scale(1.1);box-shadow:0 8px 24px rgba(26,82,118,.55);}
+.fab-time.snap{transition:left .18s,bottom .18s,top .18s,right .18s;}
 
 /* CALENDAR PAGE */
 #page-cal{padding:12px;gap:0;}
@@ -132,7 +166,6 @@ header{
 .cd.sel{background:var(--pr);color:#fff;}
 .cd.sel::after{background:#fff;}
 .cd.empty{pointer-events:none;}
-
 .today-btn{
   width:100%;padding:11px;border-radius:10px;
   border:none;background:var(--ac);color:#fff;
@@ -140,7 +173,6 @@ header{
   cursor:pointer;margin-bottom:12px;flex-shrink:0;
 }
 .today-btn:active{opacity:.85;}
-
 .elist{flex:1;overflow-y:auto;}
 .erow{display:flex;align-items:center;gap:10px;background:var(--white);border-radius:12px;box-shadow:var(--sh);padding:11px 13px;margin-bottom:8px;cursor:pointer;border-right:4px solid var(--prl);}
 .eday{font-size:24px;font-weight:700;color:var(--pr);min-width:34px;text-align:center;}
@@ -149,20 +181,101 @@ header{
 .eprev{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
 .edot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
 
-/* BOTTOM NAV */
+/* SEARCH PAGE */
+#page-search{padding:12px;gap:10px;}
+.search-input{
+  flex-shrink:0;width:100%;padding:11px 14px;border-radius:11px;border:2px solid var(--bd);
+  font-family:'Vazirmatn',sans-serif;font-size:14px;direction:rtl;
+  outline:none;background:var(--white);color:var(--tx);
+}
+.search-input:focus{border-color:var(--prl);}
+.search-results{flex:1;overflow-y:auto;}
+.sr-empty{text-align:center;color:var(--mu);font-size:13px;padding:30px 0;}
+.srow{background:var(--white);border-radius:12px;box-shadow:var(--sh);padding:12px 14px;margin-bottom:8px;cursor:pointer;border-right:4px solid var(--prl);}
+.srow-date{font-size:11px;color:var(--mu);margin-bottom:4px;}
+.srow-text{font-size:13px;line-height:1.6;color:var(--tx);}
+.srow-text mark{background:#fff3cd;border-radius:3px;padding:0 2px;}
+
+/* REMINDER PAGE */
+#page-rem{padding:12px;gap:10px;}
+.rem-form{background:var(--white);border-radius:14px;box-shadow:var(--sh);padding:14px;flex-shrink:0;}
+.rem-form-title{font-size:13px;font-weight:700;color:var(--pr);margin-bottom:10px;}
+.rem-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.rem-label{font-size:12px;color:var(--mu);flex-shrink:0;width:60px;}
+.rem-input{
+  flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid var(--bd);
+  font-family:'Vazirmatn',sans-serif;font-size:13px;direction:rtl;
+  outline:none;background:var(--bg);color:var(--tx);
+}
+.rem-input:focus{border-color:var(--prl);}
+.rem-days-input{width:70px;text-align:center;flex:none;}
+.rem-add-btn{
+  width:100%;padding:11px;border-radius:10px;border:none;
+  background:var(--pr);color:#fff;
+  font-family:'Vazirmatn',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+}
+.rem-list{flex:1;overflow-y:auto;}
+.rem-item{
+  background:var(--white);border-radius:12px;box-shadow:var(--sh);
+  padding:12px 14px;margin-bottom:8px;border-right:4px solid var(--ac);
+  display:flex;align-items:center;gap:10px;
+}
+.rem-item.expired{border-right-color:var(--mu);opacity:.7;}
+.rem-item.today-rem{border-right-color:var(--green);}
+.rem-info{flex:1;min-width:0;}
+.rem-item-title{font-size:14px;font-weight:600;color:var(--tx);}
+.rem-item-date{font-size:11px;color:var(--mu);margin-top:3px;}
+.rem-del-btn{background:none;border:none;color:#e74c3c;font-size:18px;cursor:pointer;padding:4px;}
+
+/* TRASH PAGE */
+#page-trash{padding:12px;gap:10px;}
+.trash-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.trash-title{font-size:15px;font-weight:700;color:var(--pr);}
+.trash-clear-btn{background:none;border:1.5px solid var(--red);color:var(--red);border-radius:8px;padding:6px 12px;font-family:'Vazirmatn',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.trash-list{flex:1;overflow-y:auto;}
+.trash-row{background:var(--white);border-radius:12px;box-shadow:var(--sh);padding:12px 14px;margin-bottom:8px;border-right:4px solid var(--red);}
+.trash-row-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.trash-row-date{font-size:12px;font-weight:700;color:var(--red);}
+.trash-row-del{font-size:10px;color:var(--mu);}
+.trash-row-text{font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;}
+.trash-restore-btn{background:var(--bg);border:1.5px solid var(--prl);color:var(--pr);border-radius:8px;padding:6px 14px;font-family:'Vazirmatn',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* IMAGE STRIP */
 #img-strip{display:flex;flex-wrap:wrap;gap:8px;padding:0 10px 10px;min-height:0;}
 #img-strip:empty{display:none;}
 .img-thumb{position:relative;width:80px;height:80px;}
 .img-thumb img{width:80px;height:80px;object-fit:cover;border-radius:10px;border:1.5px solid var(--bd);display:block;cursor:pointer;}
 .img-thumb-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#e74c3c;color:#fff;border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* LIGHTBOX */
 .lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center;}
 .lb.open{display:flex;}
 .lb img{max-width:96%;max-height:90vh;border-radius:10px;}
+
+/* BOTTOM NAV */
 .bnav{background:var(--white);border-top:1px solid var(--bd);display:flex;flex-shrink:0;}
 .bitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 10px;cursor:pointer;border:none;background:none;font-family:'Vazirmatn',sans-serif;}
-.bitem .bi{font-size:22px;}
-.bitem .bl{font-size:10px;color:var(--mu);font-weight:600;}
+.bitem .bi{font-size:19px;}
+.bitem .bl{font-size:9px;color:var(--mu);font-weight:600;}
 .bitem.on .bl{color:var(--pr);}
+
+/* DELETE CONFIRM MODAL */
+.del-modal{display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center;background:rgba(0,0,0,.5);}
+.del-modal.open{display:flex;}
+.del-box{background:var(--white);border-radius:18px;padding:24px 20px;max-width:300px;width:90%;text-align:center;}
+.del-box h3{font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px;}
+.del-box p{font-size:13px;color:var(--mu);margin-bottom:16px;line-height:1.6;}
+.del-code{font-size:26px;font-weight:700;color:var(--pr);letter-spacing:8px;background:var(--bg);border-radius:10px;padding:10px;margin-bottom:14px;}
+.del-code-input{
+  width:100%;padding:10px;border-radius:9px;border:2px solid var(--bd);
+  font-family:'Vazirmatn',sans-serif;font-size:20px;text-align:center;letter-spacing:6px;
+  outline:none;margin-bottom:14px;direction:ltr;
+}
+.del-code-input:focus{border-color:var(--red);}
+.del-btns{display:flex;gap:8px;}
+.del-cancel{flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg);color:var(--tx);font-family:'Vazirmatn',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.del-confirm{flex:1;padding:11px;border-radius:10px;border:none;background:var(--red);color:#fff;font-family:'Vazirmatn',sans-serif;font-size:13px;font-weight:700;cursor:pointer;opacity:.4;pointer-events:none;}
+.del-confirm.ready{opacity:1;pointer-events:auto;}
 
 /* TOAST */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--tx);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:600;opacity:0;transition:.2s;z-index:999;pointer-events:none;white-space:nowrap;}
@@ -171,66 +284,75 @@ header{
 </head>
 <body>
 
+<!-- MOOD DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeMoodDrawer()"></div>
+<div class="mood-drawer" id="moodDrawer">
+  <div class="md-title">حال و هوات چطوره؟</div>
+  <div class="md-grid">
+    <button class="mdchip" data-m="😊" data-l="شاد" onclick="pickMood(this)"><span class="mc-em">😊</span>شاد</button>
+    <button class="mdchip" data-m="😔" data-l="غمگین" onclick="pickMood(this)"><span class="mc-em">😔</span>غمگین</button>
+    <button class="mdchip" data-m="🤩" data-l="هیجانی" onclick="pickMood(this)"><span class="mc-em">🤩</span>هیجانی</button>
+    <button class="mdchip" data-m="😤" data-l="عصبی" onclick="pickMood(this)"><span class="mc-em">😤</span>عصبی</button>
+    <button class="mdchip" data-m="😴" data-l="خسته" onclick="pickMood(this)"><span class="mc-em">😴</span>خسته</button>
+    <button class="mdchip" data-m="🙏" data-l="سپاسگزار" onclick="pickMood(this)"><span class="mc-em">🙏</span>سپاسگزار</button>
+    <button class="mdchip" data-m="😌" data-l="آرام" onclick="pickMood(this)"><span class="mc-em">😌</span>آرام</button>
+    <button class="mdchip" data-m="😎" data-l="عالی" onclick="pickMood(this)"><span class="mc-em">😎</span>عالی</button>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header>
   <div class="hdr-top">
     <div>
       <div class="hdr-title">📖 خاطره</div>
-      <div class="hdr-sub">دفتر خاطرات لقمان</div>
+      <div class="hdr-sub">روزمرگی های لقمان 🥴</div>
     </div>
     <div class="hdr-btns">
-      <button class="hbtn" onclick="delEntry()">🗑</button>
+      <button class="hbtn" onclick="askDelEntry()">🗑</button>
       <button class="hbtn save" onclick="save()">💾 ذخیره</button>
     </div>
   </div>
   <div class="mood-bar">
-    <div class="mood-grid">
-      <button class="mchip" data-m="😊" onclick="pickMood(this)">😊 شاد</button>
-      <button class="mchip" data-m="😔" onclick="pickMood(this)">😔 غمگین</button>
-      <button class="mchip" data-m="🤩" onclick="pickMood(this)">🤩 هیجانی</button>
-      <button class="mchip" data-m="😤" onclick="pickMood(this)">😤 عصبی</button>
-      <button class="mchip" data-m="😴" onclick="pickMood(this)">😴 خسته</button>
-      <button class="mchip" data-m="🙏" onclick="pickMood(this)">🙏 سپاسگزار</button>
-      <button class="mchip" data-m="😌" onclick="pickMood(this)">😌 آرام</button>
-      <button class="mchip" data-m="😎" onclick="pickMood(this)">😎 عالی</button>
-    </div>
-    <div class="tool-btns">
-      <button class="tbtn" onclick="insertTime()">🕐</button>
-      <label class="tbtn">📷<input type="file" accept="image/*" capture="environment" style="display:none" onchange="insertImage(event)"></label>
+    <button class="mood-selected" id="moodSelected" onclick="openMoodDrawer()">
+      <span class="ms-emoji" id="msEmoji">🙂</span>
+      <span class="ms-lbl" id="msLbl">حال‌وهوا</span>
+      <span class="ms-arr">▾</span>
+    </button>
+    <div class="quick-tools">
+      <button class="qtbtn" onclick="insertTime()">🕐</button>
+      <label class="qtbtn">📷<input type="file" accept="image/*" capture="environment" style="display:none" onchange="insertImage(event)"></label>
     </div>
   </div>
 </header>
 
+<!-- DATE BAR -->
+<div class="datebar">
+  <button class="darrow" id="arrow-prev" onclick="changeDay(-1)">❮</button>
+  <div class="dmid">
+    <div class="ddate" id="hdate">—</div>
+    <div class="ddow" id="hdow">—</div>
+    <div class="rem-badges" id="remBadges"></div>
+  </div>
+  <button class="darrow" id="arrow-next" onclick="changeDay(+1)">❯</button>
+</div>
+
 <!-- WRITE PAGE -->
 <div class="page active" id="page-write">
-
-  <div class="datebar">
-    <button class="darrow" id="arrow-prev" onclick="changeDay(-1)">❮</button>
-    <div class="dmid">
-      <div class="ddate" id="hdate">—</div>
-      <div class="ddow" id="hdow">—</div>
-    </div>
-    <button class="darrow" id="arrow-next" onclick="changeDay(+1)">❯</button>
-  </div>
-
   <div class="mode-bar">
     <button class="mode-btn on" id="mode-normal" onclick="setMode('normal')">📝 معمولی</button>
-    <button class="mode-btn" id="mode-check" onclick="setMode('check')">☐ چک‌لیست</button>
+    <button class="mode-btn" id="mode-check" onclick="setMode('check')">☑ چک‌لیست</button>
     <button class="mode-btn" id="mode-num" onclick="setMode('num')">🔢 شماره‌دار</button>
   </div>
-
   <div class="write-card">
     <textarea id="txt" placeholder="امروز چه گذشت؟ بنویس…"></textarea>
     <div id="img-strip"></div>
   </div>
-
   <div class="bottom-tools">
     <div class="backup-row">
       <button class="bk-btn" onclick="doBackup()">💾 بکاپ</button>
       <label class="bk-btn">📂 بازیابی<input type="file" accept=".khatere" style="display:none" onchange="doRestore(event)"></label>
     </div>
   </div>
-
 </div>
 
 <!-- CALENDAR PAGE -->
@@ -245,14 +367,76 @@ header{
   <div class="elist" id="elist"></div>
 </div>
 
+<!-- SEARCH PAGE -->
+<div class="page" id="page-search">
+  <input class="search-input" id="searchInput" type="text" placeholder="جستجو در همه یادداشت‌ها…" oninput="doSearch()" />
+  <div class="search-results" id="searchResults">
+    <div class="sr-empty">بنویس تا جستجو شروع بشه 🔍</div>
+  </div>
+</div>
+
+<!-- REMINDER PAGE -->
+<div class="page" id="page-rem">
+  <div class="rem-form">
+    <div class="rem-form-title">⏰ یادآوری جدید</div>
+    <div class="rem-row">
+      <span class="rem-label">متن:</span>
+      <input class="rem-input" id="remText" type="text" placeholder="موضوع یادآوری…" />
+    </div>
+    <div class="rem-row">
+      <span class="rem-label">تاریخ:</span>
+      <button class="rem-input" id="remDateBtn" onclick="openRemCal()" style="text-align:right;cursor:pointer;background:var(--white);">انتخاب از تقویم 📅</button>
+    </div>
+    <div id="remCalWrap" style="display:none;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <button class="cal-nbtn" onclick="remCalChMonth(-1)">›</button>
+        <div id="remCalLbl" style="font-size:13px;font-weight:700;color:var(--pr);"></div>
+        <button class="cal-nbtn" onclick="remCalChMonth(1)">‹</button>
+      </div>
+      <div class="cal-grid" id="remCalGrid"></div>
+    </div>
+    <button class="rem-add-btn" onclick="addReminder()">+ افزودن یادآوری</button>
+  </div>
+  <div class="rem-list" id="remList"></div>
+</div>
+
+<!-- TRASH PAGE -->
+<div class="page" id="page-trash">
+  <div class="trash-header">
+    <div class="trash-title">🗑 سطل زباله</div>
+    <button class="trash-clear-btn" onclick="clearTrash()">پاک کردن همه</button>
+  </div>
+  <div class="trash-list" id="trashList"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bnav">
   <button class="bitem on" id="nav-write" onclick="showPage('write')"><span class="bi">✏️</span><span class="bl">یادداشت</span></button>
   <button class="bitem" id="nav-cal" onclick="showPage('cal')"><span class="bi">📅</span><span class="bl">تقویم</span></button>
+  <button class="bitem" id="nav-search" onclick="showPage('search')"><span class="bi">🔍</span><span class="bl">جستجو</span></button>
+  <button class="bitem" id="nav-rem" onclick="showPage('rem');renderRemList()"><span class="bi">⏰</span><span class="bl">یادآوری</span></button>
+  <button class="bitem" id="nav-trash" onclick="showPage('trash');renderTrash()"><span class="bi">🗑</span><span class="bl">زباله‌دان</span></button>
 </div>
 
 <div class="lb" id="lb" onclick="this.classList.remove('open')"><img id="lbImg" src=""></div>
 <div class="toast" id="toast"></div>
+
+<!-- FLOATING TIME BUTTON -->
+<button class="fab-time" id="fabTime">🕐</button>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="del-modal" id="delModal">
+  <div class="del-box">
+    <h3>⚠️ حذف یادداشت</h3>
+    <p>برای جلوگیری از حذف تصادفی،<br>کد زیر را تایپ کن:</p>
+    <div class="del-code" id="delCode"></div>
+    <input class="del-code-input" id="delCodeInput" type="text" maxlength="4" placeholder="····" oninput="checkDelCode()" />
+    <div class="del-btns">
+      <button class="del-cancel" onclick="closeDelModal()">انصراف</button>
+      <button class="del-confirm" id="delConfirmBtn" onclick="doDelEntry()">حذف</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ── JALALI ── */
@@ -289,20 +473,29 @@ function jLeap(y){return[1,5,9,13,17,22,26,30].includes(((y-474)%2820+474+38)%28
 function jDow(jy,jm,jd){const[gy,gm,gd]=toGregorian(jy,jm,jd);return new Date(gy,gm-1,gd).getDay();}
 const MN=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const DN=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
-const F=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[+d]);
+// English number format
+const F=n=>String(n);
 function todayJ(){const d=new Date();return toJalali(d.getFullYear(),d.getMonth()+1,d.getDate());}
 function key(y,m,d){return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
-function nowTime(){const d=new Date();return F(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);}
+function nowTime(){const d=new Date();return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
 /* ── DB ── */
 let DB={};
+let TRASH=[];
+let REMINDERS=[];
 let curKey=null;
 let curGDate=new Date();
 let calY,calM;
 let curMode='normal';
 
-function loadDB(){try{const r=localStorage.getItem('khatere_v7');if(r)DB=JSON.parse(r);}catch(e){}}
+function loadDB(){
+  try{const r=localStorage.getItem('khatere_v7');if(r)DB=JSON.parse(r);}catch(e){}
+  try{const r=localStorage.getItem('khatere_trash');if(r)TRASH=JSON.parse(r);}catch(e){}
+  try{const r=localStorage.getItem('khatere_rem');if(r)REMINDERS=JSON.parse(r);}catch(e){}
+}
 function saveDB(){try{localStorage.setItem('khatere_v7',JSON.stringify(DB));}catch(e){toast('حافظه پر است! بکاپ بگیرید');}}
+function saveTrash(){try{localStorage.setItem('khatere_trash',JSON.stringify(TRASH));}catch(e){}}
+function saveReminders(){try{localStorage.setItem('khatere_rem',JSON.stringify(REMINDERS));}catch(e){}}
 
 /* ── PAGE NAV ── */
 function showPage(p){
@@ -311,6 +504,8 @@ function showPage(p){
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nav-'+p).classList.add('on');
   if(p==='cal')renderCal();
+  const fab=document.getElementById('fabTime');
+  fab.style.display=(p==='write')?'flex':'none';
 }
 
 /* ── ENTRY ── */
@@ -324,16 +519,16 @@ function openEntry(k){
   document.getElementById('hdow').textContent=DN[curGDate.getDay()];
   const e=DB[k]||{};
   document.getElementById('txt').value=e.text||'';
-  document.querySelectorAll('.mchip').forEach(c=>c.classList.toggle('on',c.dataset.m===(e.mood||'')));
+  document.querySelectorAll('.mdchip').forEach(c=>c.classList.toggle('on',c.dataset.m===(e.mood||'')));
+  updateMoodSelected(e.mood||'');
   setMode(e.mode||'normal',false);
   renderImgs();
+  renderRemBadges(k);
   showPage('write');
 }
 
-/* فلش‌ها — دقیقاً ۱ روز */
 function changeDay(dir){
   _autoSave();
-  // از تاریخ میلادی ذخیره‌شده استفاده کن
   const gDate=curGDate||new Date();
   gDate.setDate(gDate.getDate()+dir);
   curGDate=new Date(gDate);
@@ -344,8 +539,11 @@ function changeDay(dir){
   document.getElementById('hdow').textContent=DN[gDate.getDay()];
   const e=DB[nk]||{};
   document.getElementById('txt').value=e.text||'';
-  document.querySelectorAll('.mchip').forEach(c=>c.classList.toggle('on',c.dataset.m===(e.mood||'')));
+  document.querySelectorAll('.mdchip').forEach(c=>c.classList.toggle('on',c.dataset.m===(e.mood||'')));
+  updateMoodSelected(e.mood||'');
   setMode(e.mode||'normal',false);
+  renderImgs();
+  renderRemBadges(nk);
 }
 
 function goToday(){
@@ -354,32 +552,80 @@ function goToday(){
   openEntry(key(y,m,d));
 }
 
-/* ── SAVE / DEL ── */
+/* ── SAVE ── */
 function _autoSave(){
   if(!curKey)return;
   const text=document.getElementById('txt').value;
-  const mood=[...document.querySelectorAll('.mchip')].find(c=>c.classList.contains('on'))?.dataset.m||'';
+  const mood=[...document.querySelectorAll('.mdchip')].find(c=>c.classList.contains('on'))?.dataset.m||'';
   DB[curKey]=Object.assign(DB[curKey]||{},{text,mood,mode:curMode});
   saveDB();
 }
 function save(){_autoSave();toast('خاطره ذخیره شد ✓');}
-function delEntry(){
-  if(!DB[curKey]){toast('چیزی برای حذف نیست');return;}
-  if(!confirm('این خاطره حذف شود؟'))return;
+
+/* ── DELETE WITH CODE ── */
+let _delCode='';
+function askDelEntry(){
+  if(!DB[curKey]||(!DB[curKey].text&&!DB[curKey].mood)){toast('چیزی برای حذف نیست');return;}
+  _delCode=String(Math.floor(1000+Math.random()*9000));
+  document.getElementById('delCode').textContent=_delCode;
+  document.getElementById('delCodeInput').value='';
+  document.getElementById('delConfirmBtn').classList.remove('ready');
+  document.getElementById('delModal').classList.add('open');
+}
+function checkDelCode(){
+  const v=document.getElementById('delCodeInput').value;
+  document.getElementById('delConfirmBtn').classList.toggle('ready',v===_delCode);
+}
+function closeDelModal(){document.getElementById('delModal').classList.remove('open');}
+function doDelEntry(){
+  if(document.getElementById('delCodeInput').value!==_delCode)return;
+  closeDelModal();
+  if(!DB[curKey])return;
+  const[y,m,d]=curKey.split('-').map(Number);
+  TRASH.unshift({
+    key:curKey,
+    dateLabel:`${F(d)} ${MN[m-1]} ${F(y)}`,
+    deletedAt:new Date().toISOString(),
+    data:JSON.parse(JSON.stringify(DB[curKey]))
+  });
+  saveTrash();
   delete DB[curKey];saveDB();
   document.getElementById('txt').value='';
-  document.querySelectorAll('.mchip').forEach(c=>c.classList.remove('on'));
-  toast('حذف شد');
+  document.querySelectorAll('.mdchip').forEach(c=>c.classList.remove('on'));
+  updateMoodSelected('');
+  toast('خاطره حذف و به زباله‌دان منتقل شد');
 }
 
-/* ── MOOD ── */
+/* ── MOOD DRAWER ── */
+function openMoodDrawer(){
+  document.getElementById('moodDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeMoodDrawer(){
+  document.getElementById('moodDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+function updateMoodSelected(m){
+  if(!m){
+    document.getElementById('msEmoji').textContent='🙂';
+    document.getElementById('msLbl').textContent='حال‌وهوا';
+    return;
+  }
+  const chip=[...document.querySelectorAll('.mdchip')].find(c=>c.dataset.m===m);
+  document.getElementById('msEmoji').textContent=m;
+  document.getElementById('msLbl').textContent=chip?chip.dataset.l:m;
+}
 function pickMood(el){
-  document.querySelectorAll('.mchip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('.mdchip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
+  updateMoodSelected(el.dataset.m);
+  clearTimeout(window._ast);
+  window._ast=setTimeout(_autoSave,500);
+  closeMoodDrawer();
 }
 
 /* ── MODE ── */
-function setMode(m, applyPrefix=true){
+function setMode(m,applyPrefix=true){
   curMode=m;
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('mode-'+m).classList.add('on');
@@ -387,7 +633,7 @@ function setMode(m, applyPrefix=true){
     const ta=document.getElementById('txt');
     if(!ta.value.trim()){
       if(m==='check'){ta.value='☐ ';}
-      else if(m==='num'){ta.value='۱. ';}
+      else if(m==='num'){ta.value='1. ';}
       else{ta.value='';}
       ta.selectionStart=ta.selectionEnd=ta.value.length;
     }
@@ -395,19 +641,19 @@ function setMode(m, applyPrefix=true){
   }
 }
 
-/* ── AUTOSAVE ON INPUT ── */
+/* ── AUTOSAVE ── */
 document.getElementById('txt').addEventListener('input',function(){
   clearTimeout(window._ast);
   window._ast=setTimeout(_autoSave,1500);
 });
+document.getElementById('txt').addEventListener('focus',function(){
+  document.getElementById('fabTime').style.display='flex';
+});
 
-/* ── CHECKLIST CLICK (toggle ☐ ↔ ☑) ── */
+/* ── CHECKLIST CLICK ── */
 document.getElementById('txt').addEventListener('click',function(){
   if(curMode!=='check')return;
-  const ta=this;
-  const pos=ta.selectionStart;
-  const val=ta.value;
-  // پیدا کردن شروع خط فعلی
+  const ta=this,pos=ta.selectionStart,val=ta.value;
   const lineStart=val.lastIndexOf('\n',pos-1)+1;
   const lineEnd=val.indexOf('\n',pos);
   const end=lineEnd===-1?val.length:lineEnd;
@@ -418,8 +664,7 @@ document.getElementById('txt').addEventListener('click',function(){
   else return;
   ta.value=val.slice(0,lineStart)+newLine+val.slice(end);
   ta.selectionStart=ta.selectionEnd=pos;
-  clearTimeout(window._ast);
-  window._ast=setTimeout(_autoSave,500);
+  clearTimeout(window._ast);window._ast=setTimeout(_autoSave,500);
 });
 
 /* ── ENTER HANDLER ── */
@@ -427,25 +672,18 @@ document.getElementById('txt').addEventListener('keydown',function(e){
   if(e.key!=='Enter')return;
   if(curMode==='normal')return;
   e.preventDefault();
-  const ta=this;
-  const pos=ta.selectionStart;
-  const val=ta.value;
-
+  const ta=this,pos=ta.selectionStart,val=ta.value;
   if(curMode==='check'){
     const ins='\n☐ ';
     ta.value=val.slice(0,pos)+ins+val.slice(pos);
     ta.selectionStart=ta.selectionEnd=pos+ins.length;
-  }
-  else if(curMode==='num'){
-    // پیدا کردن شماره آخرین خط
+  } else if(curMode==='num'){
     const textBefore=val.slice(0,pos);
     const lines=textBefore.split('\n');
     const lastLine=lines[lines.length-1];
-    // تبدیل اعداد فارسی به انگلیسی برای محاسبه
-    const normalized=lastLine.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-    const match=normalized.match(/^(\d+)\./);
+    const match=lastLine.match(/^(\d+)\./);
     const nextNum=match?parseInt(match[1])+1:1;
-    const ins='\n'+F(nextNum)+'. ';
+    const ins='\n'+nextNum+'. ';
     ta.value=val.slice(0,pos)+ins+val.slice(pos);
     ta.selectionStart=ta.selectionEnd=pos+ins.length;
   }
@@ -454,8 +692,7 @@ document.getElementById('txt').addEventListener('keydown',function(e){
 /* ── TIME INSERT ── */
 function insertTime(){
   const ta=document.getElementById('txt');
-  const pos=ta.selectionStart;
-  const val=ta.value;
+  const pos=ta.selectionStart,val=ta.value;
   const prefix=(pos>0&&val[pos-1]!=='\n')?'\n':'';
   const ins=prefix+'⏰ '+nowTime()+'\n';
   ta.value=val.slice(0,pos)+ins+val.slice(pos);
@@ -463,10 +700,9 @@ function insertTime(){
   ta.focus();
 }
 
-/* ── IMAGE INSERT ── */
+/* ── IMAGE ── */
 function renderImgs(){
-  const strip=document.getElementById('img-strip');
-  strip.innerHTML='';
+  const strip=document.getElementById('img-strip');strip.innerHTML='';
   const imgs=(DB[curKey]?.imgs)||{};
   Object.entries(imgs).forEach(([id,src])=>{
     const wrap=document.createElement('div');wrap.className='img-thumb';
@@ -474,12 +710,8 @@ function renderImgs(){
     strip.appendChild(wrap);
   });
 }
-function delImg(id){
-  if(!DB[curKey]?.imgs)return;
-  delete DB[curKey].imgs[id];saveDB();renderImgs();
-}
+function delImg(id){if(!DB[curKey]?.imgs)return;delete DB[curKey].imgs[id];saveDB();renderImgs();}
 function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
-
 function insertImage(ev){
   const f=ev.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -501,9 +733,7 @@ function renderCal(){
     const el=document.createElement('div');el.className='cdl';el.textContent=d;grid.appendChild(el);
   });
   const firstDow=(jDow(calY,calM,1)+1)%7;
-  for(let i=0;i<firstDow;i++){
-    const el=document.createElement('div');el.className='cd empty';grid.appendChild(el);
-  }
+  for(let i=0;i<firstDow;i++){const el=document.createElement('div');el.className='cd empty';grid.appendChild(el);}
   const days=jDim(calY,calM);
   const todayKey=key(...todayJ());
   for(let d=1;d<=days;d++){
@@ -540,13 +770,226 @@ function chMonth(dir){
   renderCal();
 }
 
+/* ── SEARCH ── */
+function doSearch(){
+  const q=document.getElementById('searchInput').value.trim();
+  const res=document.getElementById('searchResults');
+  if(!q){res.innerHTML='<div class="sr-empty">بنویس تا جستجو شروع بشه 🔍</div>';return;}
+  const matches=Object.entries(DB)
+    .filter(([k,e])=>e.text&&e.text.toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!matches.length){res.innerHTML='<div class="sr-empty">نتیجه‌ای پیدا نشد 🙁</div>';return;}
+  res.innerHTML='';
+  const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  matches.forEach(([k,e])=>{
+    const[y,m,d]=k.split('-').map(Number);
+    const hi=(e.text||'').replace(new RegExp(escaped,'gi'),t=>`<mark>${t}</mark>`);
+    const row=document.createElement('div');row.className='srow';
+    row.onclick=()=>openEntry(k);
+    row.innerHTML=`<div class="srow-date">${DN[jDow(y,m,d)]} — ${F(d)} ${MN[m-1]} ${F(y)}</div><div class="srow-text">${hi.slice(0,160)}</div>`;
+    res.appendChild(row);
+  });
+}
+
+/* ── REMINDERS ── */
+function dateToJKey(date){
+  const j=toJalali(date.getFullYear(),date.getMonth()+1,date.getDate());
+  return key(j[0],j[1],j[2]);
+}
+
+let _remCalY, _remCalM, _remSelKey=null;
+
+function openRemCal(){
+  const wrap=document.getElementById('remCalWrap');
+  if(wrap.style.display==='none'){
+    if(!_remCalY){const[y,m]=todayJ();_remCalY=y;_remCalM=m;}
+    renderRemCal();
+    wrap.style.display='block';
+  } else {
+    wrap.style.display='none';
+  }
+}
+function remCalChMonth(dir){
+  _remCalM+=dir;
+  if(_remCalM>12){_remCalM=1;_remCalY++;}
+  if(_remCalM<1){_remCalM=12;_remCalY--;}
+  renderRemCal();
+}
+function renderRemCal(){
+  document.getElementById('remCalLbl').textContent=`${MN[_remCalM-1]} ${F(_remCalY)}`;
+  const grid=document.getElementById('remCalGrid');grid.innerHTML='';
+  ['ش','ی','د','س','چ','پ','ج'].forEach(d=>{
+    const el=document.createElement('div');el.className='cdl';el.textContent=d;grid.appendChild(el);
+  });
+  const firstDow=(jDow(_remCalY,_remCalM,1)+1)%7;
+  for(let i=0;i<firstDow;i++){const el=document.createElement('div');el.className='cd empty';grid.appendChild(el);}
+  const days=jDim(_remCalY,_remCalM);
+  const todayKey=key(...todayJ());
+  for(let d=1;d<=days;d++){
+    const k=key(_remCalY,_remCalM,d);
+    const el=document.createElement('div');el.className='cd';
+    el.textContent=F(d);
+    if(k===todayKey)el.classList.add('today');
+    if(k===_remSelKey)el.classList.add('sel');
+    if(k<todayKey){el.style.opacity='.35';el.style.pointerEvents='none';}
+    el.onclick=()=>{
+      _remSelKey=k;
+      const[y,m,d2]=k.split('-').map(Number);
+      document.getElementById('remDateBtn').textContent=`${F(d2)} ${MN[m-1]} ${F(y)} 📅`;
+      renderRemCal();
+    };
+    grid.appendChild(el);
+  }
+}
+function addReminder(){
+  const txt=document.getElementById('remText').value.trim();
+  if(!txt){toast('متن یادآوری را بنویس');return;}
+  if(!_remSelKey){toast('تاریخ یادآوری را از تقویم انتخاب کن');return;}
+  const todayKey=key(...todayJ());
+  if(_remSelKey<=todayKey){toast('تاریخ باید بعد از امروز باشه');return;}
+  const d=daysUntil(_remSelKey);
+  const[ty,tm,td]=_remSelKey.split('-').map(Number);
+  REMINDERS.push({
+    id:'rem_'+Date.now(),
+    text:txt,
+    days:d,
+    targetKey:_remSelKey,
+    targetLabel:`${F(td)} ${MN[tm-1]} ${F(ty)}`,
+    createdKey:key(...todayJ())
+  });
+  saveReminders();
+  renderRemList();
+  renderRemBadges(curKey);
+  updateNavRemBadge();
+  document.getElementById('remText').value='';
+  document.getElementById('remDateBtn').textContent='انتخاب از تقویم 📅';
+  document.getElementById('remCalWrap').style.display='none';
+  _remSelKey=null;
+  toast('یادآوری ثبت شد ✓');
+}
+function renderRemList(){
+  const list=document.getElementById('remList');
+  if(!list)return;
+  list.innerHTML='';
+  if(!REMINDERS.length){list.innerHTML='<div class="sr-empty">یادآوری‌ای ثبت نشده</div>';return;}
+  // مرتب از نزدیک‌ترین به دورترین
+  const sorted=[...REMINDERS].sort((a,b)=>a.targetKey.localeCompare(b.targetKey));
+  sorted.forEach(rem=>{
+    const d=daysUntil(rem.targetKey);
+    const expired=d<0;
+    const todayRem=d===0;
+    let countdown='';
+    if(d===0) countdown='<span style="color:var(--green);font-weight:700;">امروز! 🎯</span>';
+    else if(d>0) countdown=`<span style="color:var(--ac);font-weight:700;">${d} روز مونده</span>`;
+    else countdown=`<span style="color:var(--mu);">${Math.abs(d)} روز گذشته</span>`;
+    const div=document.createElement('div');
+    div.className='rem-item'+(expired?' expired':'')+(todayRem?' today-rem':'');
+    div.innerHTML=`
+      <div class="rem-info">
+        <div class="rem-item-title">${rem.text}</div>
+        <div class="rem-item-date">📅 ${rem.targetLabel} &nbsp;—&nbsp; ${countdown}</div>
+      </div>
+      <button class="rem-del-btn" onclick="deleteReminder('${rem.id}')">🗑</button>`;
+    list.appendChild(div);
+  });
+}
+function deleteReminder(id){
+  REMINDERS=REMINDERS.filter(r=>r.id!==id);
+  saveReminders();renderRemList();renderRemBadges(curKey);updateNavRemBadge();
+}
+function daysUntil(targetKey){
+  const[ty,tm,td]=targetKey.split('-').map(Number);
+  const[gy,gm,gd]=toGregorian(ty,tm,td);
+  const tDate=new Date(gy,gm-1,gd);tDate.setHours(0,0,0,0);
+  const now=new Date();now.setHours(0,0,0,0);
+  return Math.round((tDate-now)/(1000*60*60*24));
+}
+function renderRemBadges(k){
+  const wrap=document.getElementById('remBadges');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  const todayKey=key(...todayJ());
+  // نمایش یادآوری‌هایی که هنوز نرسیدن، مرتب‌شده از نزدیک‌ترین
+  const active=REMINDERS
+    .filter(r=>r.targetKey>=k) // از این روز به بعد هدف دارن
+    .filter(r=>r.createdKey<=k) // از روز ایجاد به بعد نمایش بده
+    .sort((a,b)=>a.targetKey.localeCompare(b.targetKey))
+    .slice(0,3);
+  active.forEach(rem=>{
+    const b=document.createElement('div');b.className='rbadge';
+    const d=daysUntil(rem.targetKey);
+    const dFromK=daysBetweenKeys(k,rem.targetKey);
+    let suffix;
+    if(dFromK===0) suffix='(امروز! 🎯)';
+    else if(k===todayKey) suffix=`(${d} روز مونده)`;
+    else suffix=`(${dFromK} روز دیگه)`;
+    b.textContent=`⏰ ${rem.targetLabel}: ${rem.text} ${suffix}`;
+    b.onclick=()=>{showPage('rem');renderRemList();};
+    wrap.appendChild(b);
+  });
+}
+function daysBetweenKeys(fromKey,toKey){
+  const[fy,fm,fd]=fromKey.split('-').map(Number);
+  const[ty,tm,td]=toKey.split('-').map(Number);
+  const[fgy,fgm,fgd]=toGregorian(fy,fm,fd);
+  const[tgy,tgm,tgd]=toGregorian(ty,tm,td);
+  const f=new Date(fgy,fgm-1,fgd);f.setHours(0,0,0,0);
+  const t=new Date(tgy,tgm-1,tgd);t.setHours(0,0,0,0);
+  return Math.round((t-f)/(1000*60*60*24));
+}
+function updateNavRemBadge(){
+  const btn=document.getElementById('nav-rem');
+  if(!btn)return;
+  const todayKey=key(...todayJ());
+  const upcoming=REMINDERS.filter(r=>r.targetKey>=todayKey);
+  const lbl=btn.querySelector('.bl');
+  if(upcoming.length>0){
+    lbl.innerHTML=`یادآوری <span style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 5px;font-size:9px;vertical-align:middle;">${upcoming.length}</span>`;
+  } else {
+    lbl.textContent='یادآوری';
+  }
+}
+function renderTrash(){
+  const list=document.getElementById('trashList');
+  if(!list)return;
+  if(!TRASH.length){list.innerHTML='<div class="sr-empty">زباله‌دان خالیه 🎉</div>';return;}
+  list.innerHTML='';
+  TRASH.forEach((item,idx)=>{
+    const delDate=new Date(item.deletedAt);
+    const delStr=`${delDate.getFullYear()}-${String(delDate.getMonth()+1).padStart(2,'0')}-${String(delDate.getDate()).padStart(2,'0')} ${String(delDate.getHours()).padStart(2,'0')}:${String(delDate.getMinutes()).padStart(2,'0')}`;
+    const div=document.createElement('div');div.className='trash-row';
+    div.innerHTML=`
+      <div class="trash-row-meta">
+        <div class="trash-row-date">📅 ${item.dateLabel}</div>
+        <div class="trash-row-del">حذف: ${delStr}</div>
+      </div>
+      <div class="trash-row-text">${(item.data.mood||'')} ${(item.data.text||'بدون متن').slice(0,80)}</div>
+      <button class="trash-restore-btn" onclick="restoreEntry(${idx})">↩ بازگردانی</button>`;
+    list.appendChild(div);
+  });
+}
+function restoreEntry(idx){
+  const item=TRASH[idx];if(!item)return;
+  if(DB[item.key]&&(DB[item.key].text||DB[item.key].mood)){
+    if(!confirm('یادداشت این روز از قبل موجوده. جایگزین بشه؟'))return;
+  }
+  DB[item.key]=item.data;saveDB();
+  TRASH.splice(idx,1);saveTrash();
+  renderTrash();toast('خاطره بازگردانی شد ✓');
+}
+function clearTrash(){
+  if(!TRASH.length){toast('زباله‌دان خالیه');return;}
+  if(confirm('همه خاطرات حذف‌شده برای همیشه پاک بشن؟')){
+    TRASH=[];saveTrash();renderTrash();toast('زباله‌دان پاک شد');
+  }
+}
+
 /* ── BACKUP ── */
 function doBackup(){
-  const[y,m,d]=todayJ();
-  const blob=new Blob([JSON.stringify({v:7,db:DB},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({v:8,db:DB,trash:TRASH,reminders:REMINDERS},null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=`khatere_${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}.khatere`;
+  a.download=`khatere.khatere`;
   a.click();URL.revokeObjectURL(a.href);
   toast('بکاپ ذخیره شد ✓');
 }
@@ -558,7 +1001,11 @@ function doRestore(ev){
       const p=JSON.parse(e.target.result);
       if(p.db){
         if(confirm('بازیابی جایگزین خاطرات فعلی می‌شود. ادامه؟')){
-          DB=p.db;saveDB();openEntry(curKey);toast('بازیابی شد ✓');
+          DB=p.db;
+          if(p.trash)TRASH=p.trash;
+          if(p.reminders)REMINDERS=p.reminders;
+          saveDB();saveTrash();saveReminders();
+          openEntry(curKey);toast('بازیابی شد ✓');
         }
       }else toast('فایل معتبر نیست');
     }catch{toast('خطا در خواندن فایل');}
@@ -572,11 +1019,109 @@ function toast(msg){
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000);
 }
 
+/* ── FAB DRAG ── */
+(function(){
+  const fab=document.getElementById('fabTime');
+  const SIZE=52, MARGIN=10;
+  let isDragging=false, didMove=false;
+  let startX,startY,startLeft,startTop;
+
+  function clamp(val,min,max){return Math.min(Math.max(val,min),max);}
+
+  function applyPos(left,top){
+    fab.style.left=left+'px';
+    fab.style.top=top+'px';
+    fab.style.bottom='';
+    fab.style.right='';
+  }
+
+  function loadPos(){
+    const saved=localStorage.getItem('fab_pos');
+    if(saved){
+      try{
+        const{left,top}=JSON.parse(saved);
+        const maxL=window.innerWidth-SIZE-MARGIN;
+        const maxT=window.innerHeight-SIZE-MARGIN;
+        applyPos(clamp(left,MARGIN,maxL),clamp(top,MARGIN,maxT));
+      }catch(e){}
+    } else {
+      // default: bottom-left above nav
+      applyPos(16, window.innerHeight-70-SIZE);
+    }
+  }
+
+  function savePos(left,top){
+    localStorage.setItem('fab_pos',JSON.stringify({left,top}));
+  }
+
+  // touch
+  fab.addEventListener('touchstart',function(e){
+    isDragging=true; didMove=false;
+    const t=e.touches[0];
+    const rect=fab.getBoundingClientRect();
+    startX=t.clientX; startY=t.clientY;
+    startLeft=rect.left; startTop=rect.top;
+    fab.classList.add('dragging');
+    e.preventDefault();
+  },{passive:false});
+
+  document.addEventListener('touchmove',function(e){
+    if(!isDragging)return;
+    const t=e.touches[0];
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4) didMove=true;
+    const maxL=window.innerWidth-SIZE-MARGIN;
+    const maxT=window.innerHeight-SIZE-MARGIN;
+    applyPos(clamp(startLeft+dx,MARGIN,maxL), clamp(startTop+dy,MARGIN,maxT));
+    e.preventDefault();
+  },{passive:false});
+
+  document.addEventListener('touchend',function(){
+    if(!isDragging)return;
+    isDragging=false;
+    fab.classList.remove('dragging');
+    const rect=fab.getBoundingClientRect();
+    savePos(rect.left,rect.top);
+    if(!didMove) insertTime();
+  });
+
+  // mouse
+  fab.addEventListener('mousedown',function(e){
+    isDragging=true; didMove=false;
+    const rect=fab.getBoundingClientRect();
+    startX=e.clientX; startY=e.clientY;
+    startLeft=rect.left; startTop=rect.top;
+    fab.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove',function(e){
+    if(!isDragging)return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4) didMove=true;
+    const maxL=window.innerWidth-SIZE-MARGIN;
+    const maxT=window.innerHeight-SIZE-MARGIN;
+    applyPos(clamp(startLeft+dx,MARGIN,maxL), clamp(startTop+dy,MARGIN,maxT));
+  });
+
+  document.addEventListener('mouseup',function(){
+    if(!isDragging)return;
+    isDragging=false;
+    fab.classList.remove('dragging');
+    const rect=fab.getBoundingClientRect();
+    savePos(rect.left,rect.top);
+    if(!didMove) insertTime();
+  });
+
+  loadPos();
+})();
+
 /* ── BOOT ── */
 loadDB();
 const[ty,tm,td]=todayJ();
 calY=ty;calM=tm;
 openEntry(key(ty,tm,td));
+updateNavRemBadge();
 </script>
 </body>
 </html>
