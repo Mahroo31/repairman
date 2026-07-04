@@ -29,7 +29,7 @@ header{
 .hdr-sub{font-size:10px;opacity:.7;margin-top:1px;}
 .hdr-btns{display:flex;gap:5px;align-items:center;}
 .hbtn{background:rgba(255,255,255,.18);border:none;color:#fff;padding:6px 10px;border-radius:7px;font-family:'Vazirmatn',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
-.hbtn.save{background:var(--ac);}
+.hbtn.save{background:var(--ac);font-size:15px;padding:9px 18px;}
 
 /* MOOD DRAWER */
 .mood-bar{display:flex;align-items:center;gap:8px;padding-bottom:4px;}
@@ -162,6 +162,7 @@ header{
 .cd{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;color:var(--mu);position:relative;gap:1px;}
 .cd:active{background:var(--bd);}
 .cd.has::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);position:absolute;bottom:3px;}
+.cd.blackheart{box-shadow:0 0 0 3px #000;}
 .cd.today{background:#eaf4fb;color:var(--pr);}
 .cd.sel{background:var(--pr);color:#fff;}
 .cd.sel::after{background:#fff;}
@@ -297,6 +298,8 @@ header{
     <button class="mdchip" data-m="🙏" data-l="سپاسگزار" onclick="pickMood(this)"><span class="mc-em">🙏</span>سپاسگزار</button>
     <button class="mdchip" data-m="😌" data-l="آرام" onclick="pickMood(this)"><span class="mc-em">😌</span>آرام</button>
     <button class="mdchip" data-m="😎" data-l="عالی" onclick="pickMood(this)"><span class="mc-em">😎</span>عالی</button>
+    <button class="mdchip" data-m="🥴" data-l="گیج" onclick="pickMood(this)"><span class="mc-em">🥴</span>گیج</button>
+    <button class="mdchip" data-m="🖤" data-l="سیاه" onclick="pickMood(this)"><span class="mc-em">🖤</span>سیاه</button>
   </div>
 </div>
 
@@ -313,14 +316,14 @@ header{
     </div>
   </div>
   <div class="mood-bar">
-    <button class="mood-selected" id="moodSelected" onclick="openMoodDrawer()">
+    <button class="mood-selected" id="moodSelected" onclick="openMoodDrawer()" style="flex:1;">
       <span class="ms-emoji" id="msEmoji">🙂</span>
       <span class="ms-lbl" id="msLbl">حال‌وهوا</span>
       <span class="ms-arr">▾</span>
     </button>
     <div class="quick-tools">
-      <button class="qtbtn" onclick="insertTime()">🕐</button>
-      <label class="qtbtn">📷<input type="file" accept="image/*" capture="environment" style="display:none" onchange="insertImage(event)"></label>
+      <label class="qtbtn" title="دوربین">📷<input type="file" accept="image/*" capture="environment" style="display:none" onchange="insertImage(event)"></label>
+      <label class="qtbtn" title="گالری">🖼<input type="file" accept="image/*" style="display:none" onchange="insertImage(event)"></label>
     </div>
   </div>
 </header>
@@ -339,6 +342,7 @@ header{
 <!-- WRITE PAGE -->
 <div class="page active" id="page-write">
   <div class="mode-bar">
+    <button class="mode-btn" style="flex:0;padding:8px 14px;font-size:18px;" onclick="insertTime()">🕐</button>
     <button class="mode-btn on" id="mode-normal" onclick="setMode('normal')">📝 معمولی</button>
     <button class="mode-btn" id="mode-check" onclick="setMode('check')">☑ چک‌لیست</button>
     <button class="mode-btn" id="mode-num" onclick="setMode('num')">🔢 شماره‌دار</button>
@@ -422,7 +426,7 @@ header{
 <div class="toast" id="toast"></div>
 
 <!-- FLOATING TIME BUTTON -->
-<button class="fab-time" id="fabTime">🕐</button>
+
 
 <!-- DELETE CONFIRM MODAL -->
 <div class="del-modal" id="delModal">
@@ -504,8 +508,6 @@ function showPage(p){
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nav-'+p).classList.add('on');
   if(p==='cal')renderCal();
-  const fab=document.getElementById('fabTime');
-  fab.style.display=(p==='write')?'flex':'none';
 }
 
 /* ── ENTRY ── */
@@ -646,9 +648,6 @@ document.getElementById('txt').addEventListener('input',function(){
   clearTimeout(window._ast);
   window._ast=setTimeout(_autoSave,1500);
 });
-document.getElementById('txt').addEventListener('focus',function(){
-  document.getElementById('fabTime').style.display='flex';
-});
 
 /* ── CHECKLIST CLICK ── */
 document.getElementById('txt').addEventListener('click',function(){
@@ -693,8 +692,7 @@ document.getElementById('txt').addEventListener('keydown',function(e){
 function insertTime(){
   const ta=document.getElementById('txt');
   const pos=ta.selectionStart,val=ta.value;
-  const prefix=(pos>0&&val[pos-1]!=='\n')?'\n':'';
-  const ins=prefix+'⏰ '+nowTime()+'\n';
+  const ins=' ⏰'+nowTime()+' ';
   ta.value=val.slice(0,pos)+ins+val.slice(pos);
   ta.selectionStart=ta.selectionEnd=pos+ins.length;
   ta.focus();
@@ -704,11 +702,37 @@ function insertTime(){
 function renderImgs(){
   const strip=document.getElementById('img-strip');strip.innerHTML='';
   const imgs=(DB[curKey]?.imgs)||{};
-  Object.entries(imgs).forEach(([id,src])=>{
+  Object.entries(imgs).forEach(([id,data])=>{
+    const src=typeof data==='string'?data:data.src;
+    const w=typeof data==='object'&&data.w?data.w:100;
     const wrap=document.createElement('div');wrap.className='img-thumb';
-    wrap.innerHTML=`<img src="${src}" onclick="openLb('${src}')"><button class="img-thumb-del" onclick="delImg('${id}')">✕</button>`;
+    wrap.style.cssText=`position:relative;display:inline-block;width:${w}px;height:${w}px;flex-shrink:0;`;
+    wrap.innerHTML=`
+      <img src="${src}" onclick="openLb('${src}')" style="width:100%;height:100%;object-fit:cover;border-radius:10px;border:1.5px solid var(--bd);display:block;cursor:pointer;">
+      <button class="img-thumb-del" onclick="delImg('${id}')">✕</button>
+      <div style="position:absolute;bottom:2px;left:2px;width:22px;height:22px;background:rgba(0,0,0,.5);color:#fff;border-radius:4px;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:se-resize;touch-action:none;" onmousedown="startResize(event,'${id}')" ontouchstart="startResize(event,'${id}')">⤡</div>`;
     strip.appendChild(wrap);
   });
+}
+function startResize(e,id){
+  e.preventDefault();
+  const wrap=e.currentTarget.parentElement;
+  const startX=e.touches?e.touches[0].clientX:e.clientX;
+  const startW=wrap.offsetWidth;
+  function onMove(ev){
+    const x=ev.touches?ev.touches[0].clientX:ev.clientX;
+    const nw=Math.max(60,Math.min(320,startW+(x-startX)));
+    wrap.style.width=nw+'px';wrap.style.height=nw+'px';
+    const d=DB[curKey]?.imgs?.[id];
+    if(d){DB[curKey].imgs[id]=typeof d==='string'?{src:d,w:nw}:{...d,w:nw};}
+  }
+  function onUp(){
+    document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);
+    document.removeEventListener('touchmove',onMove);document.removeEventListener('touchend',onUp);
+    saveDB();
+  }
+  document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
+  document.addEventListener('touchmove',onMove,{passive:false});document.addEventListener('touchend',onUp);
 }
 function delImg(id){if(!DB[curKey]?.imgs)return;delete DB[curKey].imgs[id];saveDB();renderImgs();}
 function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
@@ -719,7 +743,7 @@ function insertImage(ev){
     if(!DB[curKey])DB[curKey]={text:'',mood:'',imgs:{}};
     if(!DB[curKey].imgs)DB[curKey].imgs={};
     const id='img_'+Date.now();
-    DB[curKey].imgs[id]=e.target.result;
+    DB[curKey].imgs[id]={src:e.target.result,w:120};
     saveDB();renderImgs();toast('تصویر اضافه شد ✓');
   };
   r.readAsDataURL(f);ev.target.value='';
@@ -742,6 +766,7 @@ function renderCal(){
     const mood=DB[k]?.mood||'';
     el.innerHTML=`<span>${F(d)}</span>${mood?`<span style="font-size:10px;line-height:1;">${mood}</span>`:''}`;
     if(DB[k]&&(DB[k].text||DB[k].mood))el.classList.add('has');
+    if(DB[k]?.mood==='🖤')el.classList.add('blackheart');
     if(k===todayKey)el.classList.add('today');
     if(k===curKey)el.classList.add('sel');
     el.onclick=()=>openEntry(k);
@@ -1019,102 +1044,6 @@ function toast(msg){
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000);
 }
 
-/* ── FAB DRAG ── */
-(function(){
-  const fab=document.getElementById('fabTime');
-  const SIZE=52, MARGIN=10;
-  let isDragging=false, didMove=false;
-  let startX,startY,startLeft,startTop;
-
-  function clamp(val,min,max){return Math.min(Math.max(val,min),max);}
-
-  function applyPos(left,top){
-    fab.style.left=left+'px';
-    fab.style.top=top+'px';
-    fab.style.bottom='';
-    fab.style.right='';
-  }
-
-  function loadPos(){
-    const saved=localStorage.getItem('fab_pos');
-    if(saved){
-      try{
-        const{left,top}=JSON.parse(saved);
-        const maxL=window.innerWidth-SIZE-MARGIN;
-        const maxT=window.innerHeight-SIZE-MARGIN;
-        applyPos(clamp(left,MARGIN,maxL),clamp(top,MARGIN,maxT));
-      }catch(e){}
-    } else {
-      // default: bottom-left above nav
-      applyPos(16, window.innerHeight-70-SIZE);
-    }
-  }
-
-  function savePos(left,top){
-    localStorage.setItem('fab_pos',JSON.stringify({left,top}));
-  }
-
-  // touch
-  fab.addEventListener('touchstart',function(e){
-    isDragging=true; didMove=false;
-    const t=e.touches[0];
-    const rect=fab.getBoundingClientRect();
-    startX=t.clientX; startY=t.clientY;
-    startLeft=rect.left; startTop=rect.top;
-    fab.classList.add('dragging');
-    e.preventDefault();
-  },{passive:false});
-
-  document.addEventListener('touchmove',function(e){
-    if(!isDragging)return;
-    const t=e.touches[0];
-    const dx=t.clientX-startX, dy=t.clientY-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4) didMove=true;
-    const maxL=window.innerWidth-SIZE-MARGIN;
-    const maxT=window.innerHeight-SIZE-MARGIN;
-    applyPos(clamp(startLeft+dx,MARGIN,maxL), clamp(startTop+dy,MARGIN,maxT));
-    e.preventDefault();
-  },{passive:false});
-
-  document.addEventListener('touchend',function(){
-    if(!isDragging)return;
-    isDragging=false;
-    fab.classList.remove('dragging');
-    const rect=fab.getBoundingClientRect();
-    savePos(rect.left,rect.top);
-    if(!didMove) insertTime();
-  });
-
-  // mouse
-  fab.addEventListener('mousedown',function(e){
-    isDragging=true; didMove=false;
-    const rect=fab.getBoundingClientRect();
-    startX=e.clientX; startY=e.clientY;
-    startLeft=rect.left; startTop=rect.top;
-    fab.classList.add('dragging');
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove',function(e){
-    if(!isDragging)return;
-    const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4) didMove=true;
-    const maxL=window.innerWidth-SIZE-MARGIN;
-    const maxT=window.innerHeight-SIZE-MARGIN;
-    applyPos(clamp(startLeft+dx,MARGIN,maxL), clamp(startTop+dy,MARGIN,maxT));
-  });
-
-  document.addEventListener('mouseup',function(){
-    if(!isDragging)return;
-    isDragging=false;
-    fab.classList.remove('dragging');
-    const rect=fab.getBoundingClientRect();
-    savePos(rect.left,rect.top);
-    if(!didMove) insertTime();
-  });
-
-  loadPos();
-})();
 
 /* ── BOOT ── */
 loadDB();
