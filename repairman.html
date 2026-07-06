@@ -122,6 +122,7 @@ header h1{font-size:18px;font-weight:700}
 .combo-opt{padding:10px 14px;cursor:pointer;font-size:14px;border-bottom:1px solid var(--bd)}
 .combo-opt:last-child{border-bottom:none}
 .combo-opt:active{background:var(--bg)}
+.ac-wrap{position:relative}
 textarea.fc{min-height:75px;resize:vertical}
 
 .time-inp{width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:10px;font-family:Arial,sans-serif;font-size:18px;direction:ltr;text-align:center;background:#fff;letter-spacing:3px;color:var(--tx)}
@@ -268,8 +269,11 @@ textarea.fc{min-height:75px;resize:vertical}
   <div class="sdiv">اطلاعات مشتری</div>
   <div class="fg">
     <label class="fl">نام و نام خانوادگی</label>
-    <input class="fc" id="fName" list="nlst" placeholder="نام کامل مشتری" oninput="onNameInput()">
-    <datalist id="nlst"></datalist>
+    <div class="ac-wrap">
+      <input class="fc" id="fName" placeholder="نام کامل مشتری" autocomplete="off" oninput="onNameInput();liveCombo('nCombo','fName','nlst')" onfocus="liveCombo('nCombo','fName','nlst')">
+      <div class="combo-list" id="nCombo"></div>
+    </div>
+    <datalist id="nlst" style="display:none"></datalist>
   </div>
   <div class="fg">
     <label class="fl">شماره تلفن(ها)</label>
@@ -295,18 +299,18 @@ textarea.fc{min-height:75px;resize:vertical}
   <div class="sdiv">اطلاعات وسیله</div>
   <div class="fg"><label class="fl">نوع وسیله</label>
     <div class="combo-wrap">
-      <input class="fc" id="fDT" placeholder="مثال: ماشین لباسشویی..." autocomplete="off">
+      <input class="fc" id="fDT" placeholder="مثال: ماشین لباسشویی..." autocomplete="off" oninput="liveCombo('dtCombo','fDT','dtlst')" onfocus="liveCombo('dtCombo','fDT','dtlst')">
       <button type="button" class="combo-btn" onclick="toggleCombo('dtCombo','fDT','dtlst')">▾</button>
+      <div class="combo-list" id="dtCombo"></div>
     </div>
-    <div class="combo-list" id="dtCombo"></div>
     <datalist id="dtlst" style="display:none"></datalist>
   </div>
   <div class="fg"><label class="fl">مدل وسیله</label>
     <div class="combo-wrap">
-      <input class="fc" id="fDM" placeholder="مدل / برند" autocomplete="off">
+      <input class="fc" id="fDM" placeholder="مدل / برند" autocomplete="off" oninput="liveCombo('dmCombo','fDM','dmlst')" onfocus="liveCombo('dmCombo','fDM','dmlst')">
       <button type="button" class="combo-btn" onclick="toggleCombo('dmCombo','fDM','dmlst')">▾</button>
+      <div class="combo-list" id="dmCombo"></div>
     </div>
-    <div class="combo-list" id="dmCombo"></div>
     <datalist id="dmlst" style="display:none"></datalist>
   </div>
   <div class="fg"><label class="fl">شرح عیب</label><textarea class="fc" id="fFlt" placeholder="توضیح کامل عیب..."></textarea></div>
@@ -809,30 +813,46 @@ function dateScore(d){
   const dt=(d.dateIn||'').replace(/\//g,'')+(d.timeIn||'').replace(':','');
   return parseInt(dt.replace(/[^0-9]/g,''))||0;
 }
-function toggleCombo(comboId, inputId, datalistId){
-  // Close all other combos first
-  document.querySelectorAll('.combo-list').forEach(c=>{if(c.id!==comboId)c.classList.remove('open');});
+const comboOptions={};
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Shows a suggestion list right under the field, filtered live as the user types.
+// forceAll=true (used by the ▾ button) shows the full saved list regardless of what's typed.
+function liveCombo(comboId, inputId, datalistId, forceAll){
   const combo=document.getElementById(comboId);
   const inp=document.getElementById(inputId);
   const dl=document.getElementById(datalistId);
-  // Build options from datalist
   const opts=[...dl.options].map(o=>o.value).filter(Boolean);
   if(!opts.length){combo.classList.remove('open');return;}
-  const q=inp.value.trim().toLowerCase();
-  const filtered=q?opts.filter(o=>o.toLowerCase().includes(q)):opts;
+  const q=forceAll?'':inp.value.trim().toLowerCase();
+  const filtered=(q?opts.filter(o=>o.toLowerCase().includes(q)):opts).slice(0,8);
   if(!filtered.length){combo.classList.remove('open');return;}
-  combo.innerHTML=filtered.map(o=>`<div class="combo-opt" onclick="selectCombo('${comboId}','${inputId}','${o.replace(/'/g,"\'")}')">${o}</div>`).join('');
-  combo.classList.toggle('open');
+  comboOptions[comboId]=filtered;
+  combo.innerHTML=filtered.map((o,i)=>`<div class="combo-opt" onclick="selectComboIdx('${comboId}','${inputId}',${i})">${escHtml(o)}</div>`).join('');
+  combo.classList.add('open');
 }
 
-function selectCombo(comboId,inputId,val){
-  document.getElementById(inputId).value=val;
+// ▾ button: toggle the full list open/closed
+function toggleCombo(comboId, inputId, datalistId){
+  document.querySelectorAll('.combo-list').forEach(c=>{if(c.id!==comboId)c.classList.remove('open');});
+  const combo=document.getElementById(comboId);
+  if(combo.classList.contains('open')){combo.classList.remove('open');return;}
+  liveCombo(comboId, inputId, datalistId, true);
+}
+
+function selectComboIdx(comboId,inputId,idx){
+  const val=(comboOptions[comboId]||[])[idx];
+  if(val===undefined)return;
+  const inp=document.getElementById(inputId);
+  inp.value=val;
   document.getElementById(comboId).classList.remove('open');
+  if(inputId==='fName')onNameInput();
+  inp.focus();
 }
 
 // Close combos when clicking outside
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.combo-wrap')&&!e.target.closest('.combo-list')){
+  if(!e.target.closest('.combo-wrap')&&!e.target.closest('.combo-list')&&!e.target.closest('.ac-wrap')){
     document.querySelectorAll('.combo-list').forEach(c=>c.classList.remove('open'));
   }
 });
