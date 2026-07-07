@@ -409,27 +409,70 @@ let customers=[], trash=[], nextCustId=1, nextDevId=1;
 let editCustId=null, editDevId=null, curSt=0, curF='all';
 let dImgs=[], fImgs=[], smsPhone='', mergeCandidate=null;
 
-function load(){
+// ---- Storage layer: IndexedDB (far larger quota than localStorage, good for photo data) ----
+const DB_NAME='rm_db', DB_VER=1, STORE='kv';
+let _dbPromise=null;
+function openDB(){
+  if(_dbPromise)return _dbPromise;
+  _dbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE);};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+  return _dbPromise;
+}
+function idbGet(key){
+  return openDB().then(db=>new Promise((resolve,reject)=>{
+    const rq=db.transaction(STORE,'readonly').objectStore(STORE).get(key);
+    rq.onsuccess=()=>resolve(rq.result);
+    rq.onerror=()=>reject(rq.error);
+  }));
+}
+function idbSet(key,val){
+  return openDB().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).put(val,key);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  }));
+}
+
+async function load(){
   try{
-    customers=JSON.parse(localStorage.getItem('rm_custs')||'[]');
-    trash=JSON.parse(localStorage.getItem('rm_trash')||'[]');
-    nextCustId=parseInt(localStorage.getItem('rm_ncid')||'1');
-    nextDevId=parseInt(localStorage.getItem('rm_ndid')||'1');
-  }catch(e){customers=[];trash=[];nextCustId=1;nextDevId=1;}
+    // One-time migration from the old localStorage data, if any exists and hasn't been migrated yet
+    const already=await idbGet('rm_custs');
+    if(already===undefined && localStorage.getItem('rm_custs')){
+      await idbSet('rm_custs',JSON.parse(localStorage.getItem('rm_custs')||'[]'));
+      await idbSet('rm_trash',JSON.parse(localStorage.getItem('rm_trash')||'[]'));
+      await idbSet('rm_ncid',parseInt(localStorage.getItem('rm_ncid')||'1'));
+      await idbSet('rm_ndid',parseInt(localStorage.getItem('rm_ndid')||'1'));
+    }
+    customers=(await idbGet('rm_custs'))||[];
+    trash=(await idbGet('rm_trash'))||[];
+    nextCustId=(await idbGet('rm_ncid'))||1;
+    nextDevId=(await idbGet('rm_ndid'))||1;
+  }catch(e){console.error(e);customers=[];trash=[];nextCustId=1;nextDevId=1;}
 }
-load();
 
-function persist(){
-  localStorage.setItem('rm_custs',JSON.stringify(customers));
-  localStorage.setItem('rm_trash',JSON.stringify(trash));
-  localStorage.setItem('rm_ncid',String(nextCustId));
-  localStorage.setItem('rm_ndid',String(nextDevId));
+async function persist(){
+  try{
+    await idbSet('rm_custs',customers);
+    await idbSet('rm_trash',trash);
+    await idbSet('rm_ncid',nextCustId);
+    await idbSet('rm_ndid',nextDevId);
+  }catch(e){
+    console.error(e);
+    alert('⚠️ خطا در ذخیره‌سازی اطلاعات! لطفاً فضای ذخیره‌سازی گوشی را بررسی کنید.');
+  }
 }
 
-setInterval(()=>{
+setInterval(async ()=>{
   if(customers.length>0){
-    localStorage.setItem('rm_backup',JSON.stringify({customers,trash,nextCustId,nextDevId,t:new Date().toISOString()}));
-    toast('💾 بک‌آپ خودکار ذخیره شد');
+    try{
+      await idbSet('rm_backup',{customers,trash,nextCustId,nextDevId,t:new Date().toISOString()});
+      toast('💾 بک‌آپ خودکار ذخیره شد');
+    }catch(e){console.error(e);}
   }
 },30*60*1000);
 
@@ -974,7 +1017,7 @@ function doImport(inp){
 }
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.className='toast',2300);}
-render();
+load().then(render);
 </script>
 </body>
 </html>
