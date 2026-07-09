@@ -118,6 +118,17 @@ header h1{font-size:18px;font-weight:700}
 .mtitle{font-size:17px;font-weight:700;text-align:center;margin-bottom:16px;color:var(--pr)}
 .xbtn{position:absolute;top:14px;left:14px;width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--mu)}
 
+.ov.open.ov-center{align-items:center;padding:0 20px}
+.st-confirm-card{background:#fff;border-radius:22px;padding:30px 24px 22px;width:100%;max-width:320px;text-align:center;animation:popIn .28s cubic-bezier(.34,1.56,.64,1);box-shadow:0 25px 60px rgba(0,0,0,.3)}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.st-confirm-icon{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 8px 20px rgba(0,0,0,.18);transition:background .15s}
+.st-confirm-title{font-size:13px;color:var(--mu);margin-bottom:10px}
+.st-confirm-badge{display:inline-block;padding:9px 24px;border-radius:30px;font-size:16px;font-weight:700;color:#fff;margin-bottom:24px;transition:background .15s}
+.st-confirm-actions{display:flex;gap:10px}
+.st-confirm-btn{flex:1;padding:13px;border-radius:14px;border:none;cursor:pointer;font-family:'Vazirmatn',sans-serif;font-size:14px;font-weight:700}
+.st-confirm-yes{background:var(--pr);color:#fff}
+.st-confirm-no{background:var(--bg);color:var(--mu)}
+
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:13px;font-weight:600;color:var(--pr);margin-bottom:5px}
 .fc{width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:10px;font-family:'Vazirmatn',sans-serif;font-size:14px;direction:rtl;text-align:right;background:var(--bg)}
@@ -412,6 +423,19 @@ textarea.fc{min-height:75px;resize:vertical}
 <div class="lb" id="lb" onclick="this.classList.remove('open')"><button class="lb-x">✕</button><img id="lbImg" src="" alt=""></div>
 <div class="toast" id="toast"></div>
 
+<!-- STATUS CHANGE CONFIRM -->
+<div class="ov ov-center" id="stConfirmOv">
+  <div class="st-confirm-card">
+    <div class="st-confirm-icon" id="stConfirmIcon">⏳</div>
+    <div class="st-confirm-title">تغییر وضعیت به:</div>
+    <div class="st-confirm-badge" id="stConfirmBadge">—</div>
+    <div class="st-confirm-actions">
+      <button class="st-confirm-btn st-confirm-yes" onclick="confirmStatusChange()">✓ تأیید</button>
+      <button class="st-confirm-btn st-confirm-no" onclick="cancelStatusChange()">✕ انصراف</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // DATA: customers[] each has {id, name, phones, devices[]}
 // devices: {devId, status, dType, dModel, fault, repair, dateIn, timeIn, dateOut, timeOut, prepay, cost, dImgs, fImgs}
@@ -427,6 +451,10 @@ let customers=[], trash=[], nextCustId=1, nextDevId=1;
 let editCustId=null, editDevId=null, curSt=0, curF='all';
 let dImgs=[], fImgs=[], smsPhone='', mergeCandidate=null;
 let openCustIds=new Set(), openDevIds=new Set();
+let pendingStatus=null;
+const STATUS_LABELS=['در انتظار','سالم','غیرقابل‌تعمیر','تعمیر شد','بدهکار','مختومه'];
+const STATUS_COLORS=['#95a5a6','#16a085','#7d3c98','#2980b9','#e74c3c','#27ae60'];
+const STATUS_ICONS=['⏳','✅','🚫','🔧','💰','📦'];
 
 // ---- Storage layer: IndexedDB (far larger quota than localStorage, good for photo data) ----
 const DB_NAME='rm_db', DB_VER=1, STORE='kv';
@@ -733,6 +761,18 @@ function fillForm(cust,dev){
 
 function setSt(s){curSt=s;document.querySelectorAll('#ssel .sopt').forEach((b,i)=>{b.className='sopt'+(i===s?` on${s}`:'');});}
 function qSt(custId,devId,s){
+  pendingStatus={custId,devId,s};
+  const icon=document.getElementById('stConfirmIcon');
+  icon.textContent=STATUS_ICONS[s];
+  icon.style.background=STATUS_COLORS[s];
+  const badge=document.getElementById('stConfirmBadge');
+  badge.textContent=STATUS_LABELS[s];
+  badge.style.background=STATUS_COLORS[s];
+  document.getElementById('stConfirmOv').classList.add('open');
+}
+function confirmStatusChange(){
+  if(!pendingStatus)return;
+  const {custId,devId,s}=pendingStatus;
   const cust=customers.find(c=>c.id===custId);
   if(cust){const dev=(cust.devices||[]).find(d=>d.devId===devId);if(dev){
     dev.status=s;
@@ -743,7 +783,10 @@ function qSt(custId,devId,s){
     }
     persist();render();
   }}
+  closeStatusConfirm();
 }
+function cancelStatusChange(){closeStatusConfirm();}
+function closeStatusConfirm(){pendingStatus=null;document.getElementById('stConfirmOv').classList.remove('open');}
 function addPh(){
   const r=document.createElement('div');r.className='ph-row';
   r.innerHTML=`<input class="fc enltr" list="plst" placeholder="09xxxxxxxxx" type="tel" oninput="onPhoneInput(this)"><button class="rmph" onclick="rmPh(this)">−</button>`;
@@ -969,7 +1012,7 @@ function sortCustomers(arr){
 function render(){
   const filtered=getFiltered();
   const el=document.getElementById('list');
-  const sl=['در انتظار','سالم','غیرقابل‌تعمیر','تعمیر شد','بدهکار','مختومه'];
+  const sl=STATUS_LABELS;
   const allDevs=customers.flatMap(c=>c.devices||[]);
 
   document.getElementById('stAll').textContent=toEn(customers.length);
@@ -1026,7 +1069,7 @@ function render(){
       </div>`;
     }).join('');
 
-    const sl2=['در انتظار','سالم','غیرقابل‌تعمیر','تعمیر شد','بدهکار','مختومه'];
+    const sl2=STATUS_LABELS;
     const dotsHtml=`<div class="status-dots">${(cust.devices||[]).map(d=>`<div class="sdot sdot${d.status}" title="${sl2[d.status]}: ${d.dType||''}"></div>`).join('')}</div>`;
 
     return `<div class="cust-card" id="cc${cust.id}">
