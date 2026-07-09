@@ -139,6 +139,8 @@ header{
   cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;
 }
 .bk-btn:active{background:var(--bd);}
+.bk-btn.save-btn{background:var(--ac);color:#fff;border-color:var(--ac);}
+.bk-btn.save-btn:active{background:#d3690f;}
 
 /* FLOATING TIME BUTTON */
 .fab-time{
@@ -312,7 +314,6 @@ header{
     </div>
     <div class="hdr-btns">
       <button class="hbtn" onclick="askDelEntry()">🗑</button>
-      <button class="hbtn save" onclick="save()">💾 ذخیره</button>
     </div>
   </div>
   <div class="mood-bar">
@@ -353,6 +354,7 @@ header{
   </div>
   <div class="bottom-tools">
     <div class="backup-row">
+      <button class="bk-btn save-btn" onclick="save()">💾 ذخیره</button>
       <button class="bk-btn" onclick="doBackup()">💾 بکاپ</button>
       <label class="bk-btn">📂 بازیابی<input type="file" accept=".khatere" style="display:none" onchange="doRestore(event)"></label>
     </div>
