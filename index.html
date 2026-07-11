@@ -1133,7 +1133,7 @@ function render(){
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <span class="cust-count">${toEn(devCount)} وسیله</span>
-          <button onclick="event.stopPropagation();openCustEditModal(${cust.id})" style="border:none;background:none;color:var(--pr);font-size:11px;cursor:pointer;padding:2px 4px;font-family:'Vazirmatn',sans-serif">✏️ ویرایش</button>
+          ${openCustIds.has(cust.id)?`<button onclick="event.stopPropagation();openCustEditModal(${cust.id})" style="border:none;background:none;color:var(--pr);font-size:11px;cursor:pointer;padding:2px 4px;font-family:'Vazirmatn',sans-serif">✏️ ویرایش</button>`:''}
         </div>
       </div>
       <div class="devices-list${openCustIds.has(cust.id)?' open':''}" id="cl${cust.id}">
@@ -1148,7 +1148,7 @@ function render(){
 
 function togCust(id){
   if(openCustIds.has(id))openCustIds.delete(id);else openCustIds.add(id);
-  document.getElementById('cl'+id).classList.toggle('open');
+  render();
 }
 function togDev(custId,devId){
   const key=custId+'_'+devId;
