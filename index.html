@@ -281,6 +281,7 @@ textarea.fc{min-height:75px;resize:vertical}
   <button class="xbtn" onclick="closeModal()">✕</button>
   <div class="mtitle" id="mtitle">ثبت وسیله جدید</div>
 
+  <div id="custInfoSec">
   <div id="idSec" style="display:none">
     <div class="id-box">
       <div class="id-lbl">⚠️ ویرایش شماره مشتری</div>
@@ -313,6 +314,9 @@ textarea.fc{min-height:75px;resize:vertical}
     <datalist id="plst"></datalist>
     <button class="addph" onclick="addPh()">+ افزودن شماره</button>
   </div>
+  </div>
+
+  <div id="devInfoSec">
   <div class="fg">
     <label class="fl">وضعیت وسیله</label>
     <div class="ssel" id="ssel">
@@ -390,7 +394,8 @@ textarea.fc{min-height:75px;resize:vertical}
     </div>
     <div class="fg" style="margin:0"><label class="fl">ساعت تحویل</label><input class="time-inp" id="fTO" type="text" placeholder="17:00" maxlength="5" oninput="fmtTime(this)" inputmode="numeric"></div>
   </div>
-  <button class="sbtn" onclick="saveItem()">💾 ذخیره پرونده</button>
+  </div>
+  <button class="sbtn" id="sbtn" onclick="saveItem()">💾 ذخیره پرونده</button>
  </div>
 </div>
 
@@ -448,7 +453,7 @@ function toEn(s){
 }
 
 let customers=[], trash=[], nextCustId=1, nextDevId=1;
-let editCustId=null, editDevId=null, curSt=0, curF='all';
+let editCustId=null, editDevId=null, curSt=0, curF='all', modalMode='full';
 let dImgs=[], fImgs=[], smsPhone='', mergeCandidate=null;
 let openCustIds=new Set(), openDevIds=new Set();
 let pendingStatus=null;
@@ -682,34 +687,38 @@ function openModal(custId=null,devId=null){
   }
   editCustId=custId;editDevId=devId;dImgs=[];fImgs=[];mergeCandidate=null;
   updLists();
+  document.getElementById('sbtn').textContent='💾 ذخیره پرونده';
+  document.getElementById('devInfoSec').style.display='block';
   if(custId!==null&&devId!==null){
-    // Edit existing device
+    // Edit existing device — customer info stays untouched here
+    modalMode='device';
     const cust=customers.find(c=>c.id===custId);
     const dev=(cust.devices||[]).find(d=>d.devId===devId);
     document.getElementById('mtitle').textContent='ویرایش وسیله — '+cust.name;
-    document.getElementById('idSec').style.display='block';
+    document.getElementById('custInfoSec').style.display='none';
+    document.getElementById('idSec').style.display='none';
     document.getElementById('fId').value=custId;
+    document.getElementById('fName').value=cust.name||'';
+    document.getElementById('phGrp').innerHTML=(cust.phones&&cust.phones.length?cust.phones:['']).map(p=>`<div class="ph-row"><input class="fc enltr" list="plst" placeholder="09xxxxxxxxx" type="tel" value="${p}" oninput="onPhoneInput(this)"><button class="rmph" onclick="rmPh(this)">−</button></div>`).join('');
     fillForm(cust,dev);
   }else if(custId!==null){
-    // New device for existing customer - auto-fill customer info
+    // New device for existing customer — customer info stays untouched here
+    modalMode='device';
     const cust=customers.find(c=>c.id===custId);
     document.getElementById('mtitle').textContent='وسیله جدید — '+cust.name;
+    document.getElementById('custInfoSec').style.display='none';
     document.getElementById('idSec').style.display='none';
     clearForm();
-    // Auto-fill customer info
+    document.getElementById('fId').value=custId;
     document.getElementById('fName').value=cust.name||'';
-    const pg=document.getElementById('phGrp');pg.innerHTML='';
-    (cust.phones&&cust.phones.length?cust.phones:['']).forEach(p=>{
-      const r=document.createElement('div');r.className='ph-row';
-      r.innerHTML=`<input class="fc enltr" list="plst" placeholder="09xxxxxxxxx" type="tel" value="${p}" oninput="onPhoneInput(this)"><button class="rmph" onclick="rmPh(this)">−</button>`;
-      pg.appendChild(r);
-    });
+    document.getElementById('phGrp').innerHTML=(cust.phones&&cust.phones.length?cust.phones:['']).map(p=>`<div class="ph-row"><input class="fc enltr" list="plst" placeholder="09xxxxxxxxx" type="tel" value="${p}" oninput="onPhoneInput(this)"><button class="rmph" onclick="rmPh(this)">−</button></div>`).join('');
     document.getElementById('fDI').value=nowJalali();
     document.getElementById('fTI').value=nowTime();
-    // Name is editable in case of typo
   }else{
     // Completely new customer
+    modalMode='full';
     document.getElementById('mtitle').textContent='ثبت وسیله جدید';
+    document.getElementById('custInfoSec').style.display='block';
     document.getElementById('idSec').style.display='none';
     clearForm();
     document.getElementById('fName').readOnly=false;
@@ -722,9 +731,31 @@ function openModal(custId=null,devId=null){
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
 }
+function openCustEditModal(custId){
+  const cust=customers.find(c=>c.id===custId);
+  if(!cust)return;
+  editCustId=custId;editDevId=null;dImgs=[];fImgs=[];mergeCandidate=null;modalMode='custEdit';
+  updLists();
+  document.getElementById('mtitle').textContent='✏️ ویرایش اطلاعات مشتری';
+  document.getElementById('custInfoSec').style.display='block';
+  document.getElementById('devInfoSec').style.display='none';
+  document.getElementById('idSec').style.display='block';
+  document.getElementById('fId').value=custId;
+  document.getElementById('fName').value=cust.name||'';
+  document.getElementById('fName').readOnly=false;
+  document.getElementById('fName').style.background='';
+  document.getElementById('fName').style.color='';
+  document.getElementById('fName').style.fontWeight='';
+  document.getElementById('phGrp').innerHTML=(cust.phones&&cust.phones.length?cust.phones:['']).map(p=>`<div class="ph-row"><input class="fc enltr" list="plst" placeholder="09xxxxxxxxx" type="tel" value="${p}" oninput="onPhoneInput(this)"><button class="rmph" onclick="rmPh(this)">−</button></div>`).join('');
+  document.getElementById('sbtn').textContent='💾 ذخیره اطلاعات مشتری';
+  document.getElementById('ov').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 function closeModal(){
   document.getElementById('ov').classList.remove('open');
   document.body.style.overflow='';
+  modalMode='full';
+  document.getElementById('sbtn').textContent='💾 ذخیره پرونده';
   // Reset name field
   document.getElementById('fName').readOnly=false;
   document.getElementById('fName').style.background='';
@@ -840,6 +871,7 @@ function calcF(){
 }
 
 function saveItem(){
+  if(modalMode==='custEdit'){saveCustOnly();return;}
   const name=document.getElementById('fName').value.trim();
   const dType=document.getElementById('fDT').value.trim();
   if(!name||!dType){alert('نام مشتری و نوع وسیله الزامی است');return;}
@@ -896,6 +928,25 @@ function saveItem(){
 
   sortCustomers(customers);persist();closeModal();render();
   toast(editDevId!==null?'✅ پرونده ویرایش شد':'✅ وسیله جدید ثبت شد');
+}
+
+function saveCustOnly(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){alert('نام مشتری الزامی است');return;}
+  const newCustId=parseInt(document.getElementById('fId').value)||editCustId;
+  if(newCustId!==editCustId){
+    if(customers.some(c=>c.id===newCustId)){alert('شماره '+newCustId+' قبلاً استفاده شده!');return;}
+    if(!confirm('شماره مشتری از '+editCustId+' به '+newCustId+' تغییر کند؟'))return;
+  }
+  const found=customers.find(c=>c.id!==editCustId&&c.name===name);
+  if(found&&!confirm('مشتری دیگری با همین نام («'+name+'») از قبل ثبت شده. مطمئنید می‌خواهید ادامه دهید؟'))return;
+  const cust=customers.find(c=>c.id===editCustId);
+  if(!cust)return;
+  cust.id=newCustId;
+  cust.name=name;
+  cust.phones=getPhs();
+  sortCustomers(customers);persist();closeModal();render();
+  toast('✅ اطلاعات مشتری ویرایش شد');
 }
 
 function delDevice(custId,devId){
@@ -1080,7 +1131,10 @@ function render(){
           <div class="cust-meta">${toEn((cust.phones||[])[0]||'—')}</div>
           <div style="font-size:10px;color:var(--pr);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px">${[...(cust.devices||[])].sort((a,b)=>dateScore(b)-dateScore(a)).slice(0,2).map(d=>d.dType+(d.dModel?' '+d.dModel:'')).join(' · ')}</div>
         </div>
-        <span class="cust-count">${toEn(devCount)} وسیله</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <span class="cust-count">${toEn(devCount)} وسیله</span>
+          <button onclick="event.stopPropagation();openCustEditModal(${cust.id})" style="border:none;background:none;color:var(--pr);font-size:11px;cursor:pointer;padding:2px 4px;font-family:'Vazirmatn',sans-serif">✏️ ویرایش</button>
+        </div>
       </div>
       <div class="devices-list${openCustIds.has(cust.id)?' open':''}" id="cl${cust.id}">
         <div style="padding:8px 4px 4px">${phs}</div>
