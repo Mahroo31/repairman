@@ -878,10 +878,8 @@ function saveItem(){
 
   let devOutDate=document.getElementById('fDO').value.trim();
   let devOutTime=document.getElementById('fTO').value.trim();
-  if(curSt===4||curSt===5){
-    if(!devOutDate&&!devOutTime){devOutDate=nowJalali();devOutTime=nowTime();}
-  }else{
-    devOutDate='';devOutTime='';
+  if((curSt===4||curSt===5)&&!devOutDate&&!devOutTime){
+    devOutDate=nowJalali();devOutTime=nowTime();
   }
 
   const dev={
@@ -949,6 +947,15 @@ function saveCustOnly(){
   toast('✅ اطلاعات مشتری ویرایش شد');
 }
 
+function stampDelivery(custId,devId){
+  const cust=customers.find(c=>c.id===custId);
+  if(!cust)return;
+  const dev=(cust.devices||[]).find(d=>d.devId===devId);
+  if(!dev)return;
+  dev.dateOut=nowJalali();dev.timeOut=nowTime();
+  persist();render();
+  toast('⏱️ ساعت تحویل ثبت شد');
+}
 function delDevice(custId,devId){
   if(!confirm('این وسیله به سطل زباله منتقل شود؟'))return;
   const cust=customers.find(c=>c.id===custId);
@@ -1114,6 +1121,7 @@ function render(){
           </div>
           <div class="act-row">
             <button class="abtn ae" onclick="openModal(${cust.id},${dev.devId})">✏️ ویرایش</button>
+            <button class="abtn" style="background:#eafaf1;color:#1e8449" onclick="stampDelivery(${cust.id},${dev.devId})">⏱️ ثبت تحویل الان</button>
             <button class="abtn ad" onclick="delDevice(${cust.id},${dev.devId})">🗑️ حذف</button>
           </div>
         </div>
